@@ -1,6 +1,7 @@
 package com.rkhvstnv.weatherapp
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
@@ -13,7 +14,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
+import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.Toast
+import android.widget.ViewAnimator
+import androidx.core.view.ViewCompat
 import com.google.android.gms.location.*
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -21,6 +27,13 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.rkhvstnv.weatherapp.databinding.ActivityMainBinding
+import com.rkhvstnv.weatherapp.models.WeatherResponse
+import com.rkhvstnv.weatherapp.network.WeatherService
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -103,8 +116,8 @@ class MainActivity : AppCompatActivity() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        //locationRequest.interval = 1000 todo
-        //locationRequest.numUpdates = 10
+        //locationRequest.interval = 1000
+        //locationRequest.numUpdates = 3
         mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper()!!)
     }
     private val mLocationCallback = object : LocationCallback(){
@@ -112,17 +125,57 @@ class MainActivity : AppCompatActivity() {
             val lastLocation = result.lastLocation
             val latitude = lastLocation.latitude
             val longitude = lastLocation.longitude
-            getLocationWeatherDetails()
+            getLocationWeatherDetails(latitude, longitude)
 
         }
     }
 
     //location details
-    private fun getLocationWeatherDetails(){
+    private fun getLocationWeatherDetails(lat: Double, long: Double){
         if(Constants.isNetworkAvailable(this)){
-            Toast.makeText(this, "yes", Toast.LENGTH_SHORT).show()
+            //build connection
+            val retrofit: Retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create()).build()
+            //create response
+            val service: WeatherService = retrofit.create(WeatherService::class.java)
+            //create call
+            val listCall: Call<WeatherResponse> = service.getWeather(lat, long, Constants.METRIC_UNIT, Constants.API_ID)
+
+            showBackgroundProgress()
+            //asynchronous send request
+            listCall.enqueue(object : Callback<WeatherResponse>{
+                override fun onResponse(
+                    call: Call<WeatherResponse>,
+                    response: Response<WeatherResponse>
+                ) {
+                    hideBackgroundProgress()
+                    if (response.isSuccessful){
+                        val weatherList: WeatherResponse = response.body()!!
+                        //binding.tvTest.text = weatherList.toString()
+                    }else{
+                        //binding.tvTest.text = response.code().toString()
+                    }
+
+                }
+
+                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                    Log.e("WeatherResponse", t.message.toString())
+                    hideBackgroundProgress()
+                }
+
+            })
         } else{
-            Toast.makeText(this, "no", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Network is unavailable", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showBackgroundProgress(){
+        binding.pbBackgroundProgress.visibility = View.VISIBLE
+        ViewCompat.animate(binding.pbBackgroundProgress).translationY(100f).duration = 500
+    }
+    private fun hideBackgroundProgress(){
+        ViewCompat.animate(binding.pbBackgroundProgress).translationY(-100f).duration = 500
+        //binding.pbBackgroundProgress.visibility = View.GONE
     }
 }

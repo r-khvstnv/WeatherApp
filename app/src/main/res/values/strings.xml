@@ -5,4 +5,6 @@
         It can be enabled under the Application Settings</string>
     <string name="st_go_to_settings">Settings</string>
     <string name="st_cancel">Cancel</string>
+    <string name="st_celsius">°C</string>
+    <string name="st_celsius_sign">°</string>
 </resources>

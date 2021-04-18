@@ -7,6 +7,6 @@ data class MainModel(
         val feelsLike: Double,
         val tempMin: Double,
         val tempMax: Double,
-        val pressure: Int,
+        val pressure: Double,
         val humidity: Int) : Serializable {
 }
