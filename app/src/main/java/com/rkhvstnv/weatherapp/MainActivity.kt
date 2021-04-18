@@ -1,7 +1,6 @@
 package com.rkhvstnv.weatherapp
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
@@ -12,13 +11,13 @@ import android.location.LocationManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
-import android.view.animation.AnimationUtils
 import android.widget.Toast
-import android.widget.ViewAnimator
 import androidx.core.view.ViewCompat
 import com.google.android.gms.location.*
 import com.karumi.dexter.Dexter
@@ -34,11 +33,14 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     //fused client
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -50,6 +52,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         }else{
+            requestAppropriateLocation()
+        }
+
+        binding.ivRefresh.setOnClickListener{
             requestAppropriateLocation()
         }
     }
@@ -116,8 +122,7 @@ class MainActivity : AppCompatActivity() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        //locationRequest.interval = 1000
-        //locationRequest.numUpdates = 3
+
         mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper()!!)
     }
     private val mLocationCallback = object : LocationCallback(){
@@ -125,7 +130,10 @@ class MainActivity : AppCompatActivity() {
             val lastLocation = result.lastLocation
             val latitude = lastLocation.latitude
             val longitude = lastLocation.longitude
+
             getLocationWeatherDetails(latitude, longitude)
+            //otherwise refresh won't be worked
+            mFusedLocationClient.removeLocationUpdates(this)
 
         }
     }
@@ -141,20 +149,20 @@ class MainActivity : AppCompatActivity() {
             val service: WeatherService = retrofit.create(WeatherService::class.java)
             //create call
             val listCall: Call<WeatherResponse> = service.getWeather(lat, long, Constants.METRIC_UNIT, Constants.API_ID)
-
             showBackgroundProgress()
             //asynchronous send request
-            listCall.enqueue(object : Callback<WeatherResponse>{
+            listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(
                     call: Call<WeatherResponse>,
                     response: Response<WeatherResponse>
                 ) {
                     hideBackgroundProgress()
-                    if (response.isSuccessful){
+                    if (response.isSuccessful) {
                         val weatherList: WeatherResponse = response.body()!!
-                        //binding.tvTest.text = weatherList.toString()
-                    }else{
-                        //binding.tvTest.text = response.code().toString()
+                        setUI(weatherList)
+                        //binding.tvCurrentDate.text = weatherList.toString()
+                    } else {
+                        Toast.makeText(this@MainActivity, "${response.code()}", Toast.LENGTH_SHORT).show()
                     }
 
                 }
@@ -170,12 +178,70 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //background top
     private fun showBackgroundProgress(){
         binding.pbBackgroundProgress.visibility = View.VISIBLE
         ViewCompat.animate(binding.pbBackgroundProgress).translationY(100f).duration = 500
     }
     private fun hideBackgroundProgress(){
         ViewCompat.animate(binding.pbBackgroundProgress).translationY(-100f).duration = 500
-        //binding.pbBackgroundProgress.visibility = View.GONE
+        Handler(Looper.getMainLooper()).postDelayed({binding.pbBackgroundProgress.visibility = View.GONE}, 1000)
+    }
+
+    //set images
+    private fun setUI(weatherList: WeatherResponse){
+        //go from top top bottom of layout
+        binding.tvCity.text = weatherList.name
+        binding.tvCountry.text = weatherList.sys.country
+
+        binding.tvCurrentDate.text = getCurrentDate()
+
+        binding.tvCurrentTemp.text = weatherList.main.temp.toInt().toString()
+        binding.tvMinTemp.text = weatherList.main.temp_min.toString()
+        binding.tvMaxTemp.text = weatherList.main.temp_max.toString()
+
+
+        for (i in weatherList.weather.indices){
+            binding.tvDescription.text = weatherList.weather[i].description
+            setRightImage(weatherList.weather[i].id)
+        }
+
+        binding.tvSunrise.text = getUnixTime(weatherList.sys.sunrise)
+        binding.tvSunset.text = getUnixTime(weatherList.sys.sunset)
+
+        binding.tvCurrentWind.text = weatherList.wind.speed.toString() + " ${getString(R.string.st_m_s)}"
+    }
+
+    private fun setRightImage(id: Int){
+        when(id){
+            in 200..232 -> binding.ivIcon.setImageResource(R.drawable.ic_thunderstorm)
+            in 300..321 -> binding.ivIcon.setImageResource(R.drawable.ic_drizzle)
+            in 500..531 -> binding.ivIcon.setImageResource(R.drawable.ic_showers)
+            600 -> binding.ivIcon.setImageResource(R.drawable.ic_snow_light)
+            in 601..602 -> binding.ivIcon.setImageResource(R.drawable.ic_snow)
+            in 611..622 -> binding.ivIcon.setImageResource(R.drawable.ic_sleet)
+            in 701..771 -> binding.ivIcon.setImageResource(R.drawable.ic_foggy)
+            781 -> binding.ivIcon.setImageResource(R.drawable.ic_tornado)
+            800 -> binding.ivIcon.setImageResource(R.drawable.ic_sunny)
+            801 -> binding.ivIcon.setImageResource(R.drawable.ic_clear_cloudy)
+            802 -> binding.ivIcon.setImageResource(R.drawable.ic_partly_cloudy)
+            803 -> binding.ivIcon.setImageResource(R.drawable.ic_cloudy)
+            804 -> binding.ivIcon.setImageResource(R.drawable.ic_mostly_cloudy)
+
+        }
+
+    }
+    //time from json
+    private fun getUnixTime(timex: Long): String{
+        val date = Date(timex * 1000L)
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
+    }
+    private fun getCurrentDate(): String{
+        val date = System.currentTimeMillis()
+        val sdf = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
     }
 }

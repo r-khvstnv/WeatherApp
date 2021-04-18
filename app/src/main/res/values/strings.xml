@@ -7,4 +7,14 @@
     <string name="st_cancel">Cancel</string>
     <string name="st_celsius">°C</string>
     <string name="st_celsius_sign">°</string>
+    <string name="st_m_s">m/s</string>
+
+    <!--Descriptions -->
+    <string name="st_refresh">refresh</string>
+    <string name="st_min_temp">min temperature</string>
+    <string name="st_max_temp">max temperature</string>
+    <string name="st_weather_icon">weather icon</string>
+    <string name="st_sunrise">sunrise</string>
+    <string name="st_sunset">sunset</string>
+    <string name="st_wind_speed">wind speed</string>
 </resources>

@@ -7,6 +7,6 @@ data class SysModel(
         val id: Int,
         val message: Double,
         val country: String,
-        val sunrise: Int,
-        val sunset: Int) : Serializable {
+        val sunrise: Long,
+        val sunset: Long) : Serializable {
 }

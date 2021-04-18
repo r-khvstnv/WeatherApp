@@ -1,222 +1,263 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/mColdWhite"
     android:orientation="vertical"
-    tools:context=".MainActivity">
-    <!-- Animated Background Loading-->
-    <ProgressBar
-        android:id="@+id/pb_background_progress"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:padding="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:background="@drawable/pb_background"
-        android:indeterminateTint="@color/mColdWhite"
-        android:visibility="visible"
-        />
-
-    <!--City and Country-->
-    <TextView
-        android:id="@+id/tv_city"
-        android:layout_width="wrap_content"
+    tools:context=".MainActivity"
+    >
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="30dp"
-        android:text="Moscow"
-        android:textSize="28sp"
-        android:textColor="@color/mDarkBlue"
-        android:textStyle="bold"
-        />
-    <TextView
-        android:id="@+id/tv_country"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tv_city"
-        app:layout_constraintLeft_toLeftOf="@id/tv_city"
-        android:text="Russia"
-        android:textSize="14sp"
-        android:textColor="@color/mDarkBlue"
-        />
-
-    <!--Current date-->
-    <TextView
-        android:id="@+id/tv_current_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_country"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="Saturday, 18 December 2021"
-        android:textSize="18sp"
-        android:textColor="@color/mDarkBlue"
-        />
-
-
-    <!--Temperatures-->
-    <TextView
-        android:id="@+id/tv_current_temp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_current_date"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="22"
-        android:textSize="110sp"
-        android:textAllCaps="true"
-        android:textColor="@color/mDarkBlue"
-        />
-    <LinearLayout
-        android:id="@+id/ll_min_max"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_current_temp"
         >
-        <ImageView
-            android:layout_width="@dimen/dim_min_max_temp_size"
-            android:layout_height="@dimen/dim_min_max_temp_size"
-            android:src="@drawable/ic_min_temp"
-            android:scaleType="fitCenter"
+        <!-- Animated Background Loading-->
+        <ProgressBar
+            android:id="@+id/pb_background_progress"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:padding="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:background="@drawable/pb_background"
+            android:indeterminateTint="@color/mColdWhite"
+            android:visibility="gone"
             />
+
+        <!--City and Country-->
         <TextView
-            android:id="@+id/tv_min_temp"
+            android:id="@+id/tv_city"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:text="10°C"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="30dp"
+            tools:text="Moscow"
+            android:textSize="28sp"
+            android:textColor="@color/mDarkBlue"
+            android:textStyle="bold"
+            />
+        <TextView
+            android:id="@+id/tv_country"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_city"
+            app:layout_constraintLeft_toLeftOf="@id/tv_city"
+            tools:text="Uzbekistan"
+            android:textSize="14sp"
+            android:textColor="@color/mDarkBlue"
+            />
+
+        <!--Refresh button-->
+        <ImageView
+            android:id="@+id/iv_refresh"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_refresh"
+            android:contentDescription="@string/st_refresh"
+            android:layout_margin="30dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/mDarkBlue" />
+
+        <!--Current date-->
+        <TextView
+            android:id="@+id/tv_current_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_country"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="Saturday, 18 December 2021"
             android:textSize="18sp"
             android:textColor="@color/mDarkBlue"
             />
 
-        <ImageView
-            android:layout_marginStart="50dp"
-            android:layout_width="@dimen/dim_min_max_temp_size"
-            android:layout_height="@dimen/dim_min_max_temp_size"
-            android:src="@drawable/ic_max_temp"
-            android:scaleType="fitCenter"
-            />
+
+        <!--Temperatures-->
         <TextView
-            android:id="@+id/tv_max_temp"
+            android:id="@+id/tv_current_temp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:text="10°C"
-            android:textSize="18sp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_current_date"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="22"
+            android:textSize="110sp"
+            android:textAllCaps="true"
             android:textColor="@color/mDarkBlue"
-            />
-    </LinearLayout>
-
-    <!--Images-->
-    <ImageView
-        android:id="@+id/iv_icon"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="70dp"
-        app:layout_constraintTop_toBottomOf="@id/ll_min_max"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:src="@drawable/ic_drizzle"
-        android:scaleType="fitCenter"
-        />
-    <TextView
-        android:id="@+id/tv_current_weather"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/iv_icon"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="Light Drizzle"
-        android:textSize="24sp"
-        android:textColor="@color/mDarkBlue"
-        />
-
-
-    <!--Sunset/Sunrise-->
-    <LinearLayout
-        android:id="@+id/ll_sun"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_current_weather"
-        >
-        <ImageView
-            android:layout_width="@dimen/dim_min_max_temp_size"
-            android:layout_height="@dimen/dim_min_max_temp_size"
-            android:src="@drawable/ic_sunrise"
-            android:scaleType="fitCenter"
             />
         <TextView
-            android:id="@+id/tv_sunrise"
+            android:id="@+id/cel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="@dimen/dim_margin_start_sun"
-            android:text="08:30"
-            android:textSize="18sp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toTopOf="@id/tv_current_temp"
+            app:layout_constraintLeft_toRightOf="@id/tv_current_temp"
+            android:text="@string/st_celsius_sign"
+            android:textSize="64sp"
+            android:textAllCaps="true"
+            android:textStyle="bold"
             android:textColor="@color/mDarkBlue"
             />
+        <LinearLayout
+            android:id="@+id/ll_min_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_current_temp"
+            >
+            <ImageView
+                android:layout_width="@dimen/dim_min_max_temp_size"
+                android:layout_height="@dimen/dim_min_max_temp_size"
+                android:src="@drawable/ic_min_temp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/st_min_temp"
+                />
+            <TextView
+                android:id="@+id/tv_min_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                tools:text="10°C"
+                android:textSize="18sp"
+                android:textColor="@color/mDarkBlue"
+                />
 
+            <ImageView
+                android:layout_marginStart="50dp"
+                android:layout_width="@dimen/dim_min_max_temp_size"
+                android:layout_height="@dimen/dim_min_max_temp_size"
+                android:src="@drawable/ic_max_temp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/st_max_temp"
+                />
+            <TextView
+                android:id="@+id/tv_max_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                tools:text="10°C"
+                android:textSize="18sp"
+                android:textColor="@color/mDarkBlue"
+                />
+        </LinearLayout>
+
+        <!--Images-->
         <ImageView
-            android:layout_marginStart="50dp"
-            android:layout_width="@dimen/dim_min_max_temp_size"
-            android:layout_height="@dimen/dim_min_max_temp_size"
-            android:src="@drawable/ic_sunset"
+            android:id="@+id/iv_icon"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="70dp"
+            app:layout_constraintTop_toBottomOf="@id/ll_min_max"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:src="@drawable/ic_drizzle"
             android:scaleType="fitCenter"
+            android:contentDescription="@string/st_weather_icon"
             />
         <TextView
-            android:id="@+id/tv_sunset"
+            android:id="@+id/tv_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="@dimen/dim_margin_start_sun"
-            android:text="19:36"
-            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/iv_icon"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="Light Drizzle"
+            android:textAllCaps="true"
+            android:textSize="24sp"
             android:textColor="@color/mDarkBlue"
             />
-    </LinearLayout>
 
-    <!--Wind-->
-    <LinearLayout
-        android:id="@+id/ll_wind"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="20dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_sun"
-        >
-        <ImageView
-            android:layout_width="@dimen/dim_min_max_temp_size"
-            android:layout_height="@dimen/dim_min_max_temp_size"
-            android:src="@drawable/ic_wind_speed"
-            android:scaleType="fitCenter"
-            />
-        <TextView
-            android:id="@+id/tv_current_wind"
+
+        <!--Sunset/Sunrise-->
+        <LinearLayout
+            android:id="@+id/ll_sun"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="20dp"
-            android:text="17 m/s"
-            android:textSize="18sp"
-            android:textColor="@color/mDarkBlue"
-            />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_description"
+            >
+            <ImageView
+                android:layout_width="@dimen/dim_min_max_temp_size"
+                android:layout_height="@dimen/dim_min_max_temp_size"
+                android:src="@drawable/ic_sunrise"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/st_sunrise"
+                />
+            <TextView
+                android:id="@+id/tv_sunrise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="@dimen/dim_margin_start_sun"
+                tools:text="08:30"
+                android:textSize="18sp"
+                android:textAllCaps="true"
+                android:textColor="@color/mDarkBlue"
+                />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:layout_marginStart="50dp"
+                android:layout_width="@dimen/dim_min_max_temp_size"
+                android:layout_height="@dimen/dim_min_max_temp_size"
+                android:src="@drawable/ic_sunset"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/st_sunset"
+                />
+            <TextView
+                android:id="@+id/tv_sunset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="@dimen/dim_margin_start_sun"
+                tools:text="19:36"
+                android:textSize="18sp"
+                android:textAllCaps="true"
+                android:textColor="@color/mDarkBlue"
+                />
+        </LinearLayout>
+
+        <!--Wind-->
+        <LinearLayout
+            android:id="@+id/ll_wind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="50dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ll_sun"
+            app:layout_constraintBottom_toBottomOf="parent"
+            >
+            <ImageView
+                android:layout_width="@dimen/dim_min_max_temp_size"
+                android:layout_height="@dimen/dim_min_max_temp_size"
+                android:src="@drawable/ic_wind_speed"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/st_wind_speed"
+                />
+            <TextView
+                android:id="@+id/tv_current_wind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="20dp"
+                tools:text="17 m/s"
+                android:textSize="18sp"
+                android:textColor="@color/mDarkBlue"
+                />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

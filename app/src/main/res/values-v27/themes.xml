@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MyTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/mColdWhite</item>
+        <item name="android:navigationBarColor">@color/mColdWhite</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
