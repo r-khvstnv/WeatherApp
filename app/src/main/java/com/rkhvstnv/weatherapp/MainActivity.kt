@@ -3,23 +3,20 @@ package com.rkhvstnv.weatherapp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.location.LocationManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import com.google.android.gms.location.*
+import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -40,33 +37,42 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     //fused client
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+    //shared preferences
+    private lateinit var mSharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        //check location
+
+        /** In the next line will be stored last request weather info*/
+        mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_NAME, Context.MODE_PRIVATE)
+        /** Show weather info on the screen*/
+        setUI()
+        /** Check Location availability and request weather update*/
         if (!isLocationFunctionalityEnabled()){
-            //goto settings
+            //otherwise goto settings
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         }else{
             requestAppropriateLocation()
         }
 
+        /**Refresh button*/
         binding.ivRefresh.setOnClickListener{
             requestAppropriateLocation()
         }
     }
 
 
-    /** Next method show dialog which offer user to get permissions if previously their was rejected*/
+    /** Next method show dialog which offer user to get permissions if previously they was rejected*/
     private fun showRationalPermissionDialog(){
         val permissionAlertDialog = AlertDialog.Builder(this).setMessage(R.string.st_permission_needed_to_be_granted)
+        //positive button
         permissionAlertDialog.setPositiveButton(getString(R.string.st_go_to_settings)){ _: DialogInterface, _: Int ->
             try {
-                //переходим к настройкам приложения где можно предоставить разрешение
+                //go to app settings
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", packageName, null)
                 intent.data = uri
@@ -75,13 +81,15 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
-
+        //negative button
         permissionAlertDialog.setNegativeButton(R.string.st_cancel){ dialogInterface: DialogInterface, _: Int ->
             dialogInterface.dismiss()
         }
 
         permissionAlertDialog.show()
     }
+    /** Next method check permission for using location modules
+     *      and after that call current location method*/
     private fun requestAppropriateLocation(){
         Dexter.withContext(this).withPermissions(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -107,7 +115,7 @@ class MainActivity : AppCompatActivity() {
             }).onSameThread().check()
     }
 
-    //check gps availability
+    /** Next method check that location modules are turned on*/
     private fun isLocationFunctionalityEnabled(): Boolean{
         //access to the system location services
         val locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -115,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    //current location
+    /** Next method request current device location, based on the latitude and longitude*/
     @SuppressLint("MissingPermission")
     private fun createLocationRequest(){
         //initialize current location
@@ -132,13 +140,13 @@ class MainActivity : AppCompatActivity() {
             val longitude = lastLocation.longitude
 
             getLocationWeatherDetails(latitude, longitude)
-            //otherwise refresh won't be worked
+            /** Remove Location updates, otherwise refresh user can't to refresh weather info*/
             mFusedLocationClient.removeLocationUpdates(this)
-
         }
     }
 
-    //location details
+    /** Next method request weather info from open-source using Retrofit Api
+     * and store received data in SharedPreference*/
     private fun getLocationWeatherDetails(lat: Double, long: Double){
         if(Constants.isNetworkAvailable(this)){
             //build connection
@@ -149,26 +157,39 @@ class MainActivity : AppCompatActivity() {
             val service: WeatherService = retrofit.create(WeatherService::class.java)
             //create call
             val listCall: Call<WeatherResponse> = service.getWeather(lat, long, Constants.METRIC_UNIT, Constants.API_ID)
+
+            //notify user that request in process
             showBackgroundProgress()
+
             //asynchronous send request
             listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(
                     call: Call<WeatherResponse>,
                     response: Response<WeatherResponse>
                 ) {
-                    hideBackgroundProgress()
                     if (response.isSuccessful) {
+                        //get data
                         val weatherList: WeatherResponse = response.body()!!
-                        setUI(weatherList)
-                        //binding.tvCurrentDate.text = weatherList.toString()
+                        /**Convert data to Json stream. It will be lately used for shared preferences.
+                         *      This way improve UE, since information will already be displayed instead of a blank screen*/
+                        val weatherResponseJsonString = Gson().toJson(weatherList)
+                        val editor = mSharedPreferences.edit()
+                        editor.putString(Constants.WEATHER_RESPONSE_DATA, weatherResponseJsonString)
+                        editor.apply()
+
+                        //update info on the screen
+                        setUI()
+                        //hide progress bar
+                        hideBackgroundProgress()
                     } else {
-                        Toast.makeText(this@MainActivity, "${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "Error: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
 
                 }
 
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     Log.e("WeatherResponse", t.message.toString())
+                    Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                     hideBackgroundProgress()
                 }
 
@@ -178,7 +199,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //background top
+    /** Next 2 methods show or hide progress bar with corresponding animation*/
     private fun showBackgroundProgress(){
         binding.pbBackgroundProgress.visibility = View.VISIBLE
         ViewCompat.animate(binding.pbBackgroundProgress).translationY(100f).duration = 500
@@ -188,30 +209,40 @@ class MainActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({binding.pbBackgroundProgress.visibility = View.GONE}, 1000)
     }
 
-    //set images
-    private fun setUI(weatherList: WeatherResponse){
-        //go from top top bottom of layout
-        binding.tvCity.text = weatherList.name
-        binding.tvCountry.text = weatherList.sys.country
+    /** Next method set all received data from SharedPreferences on the screen.
+     *          SharedPreferences updates in getLocationWeatherDetails every time */
+    @SuppressLint("SetTextI18n")
+    private fun setUI(){
+        val weatherResponseJsonString = mSharedPreferences.getString(Constants.WEATHER_RESPONSE_DATA, null)
 
-        binding.tvCurrentDate.text = getCurrentDate()
+        if (!weatherResponseJsonString.isNullOrEmpty()){
+            //convert data back
+            val weatherList = Gson().fromJson(weatherResponseJsonString, WeatherResponse::class.java)
 
-        binding.tvCurrentTemp.text = weatherList.main.temp.toInt().toString()
-        binding.tvMinTemp.text = weatherList.main.temp_min.toString()
-        binding.tvMaxTemp.text = weatherList.main.temp_max.toString()
+            /** Set data from top to bottom of the screen*/
+            binding.tvCity.text = weatherList.name
+            binding.tvCountry.text = weatherList.sys.country
+
+            binding.tvCurrentDate.text = getCurrentDate()
+
+            binding.tvCurrentTemp.text = weatherList.main.temp.toInt().toString()
+            binding.tvMinTemp.text = weatherList.main.temp_min.toString()
+            binding.tvMaxTemp.text = weatherList.main.temp_max.toString()
 
 
-        for (i in weatherList.weather.indices){
-            binding.tvDescription.text = weatherList.weather[i].description
-            setRightImage(weatherList.weather[i].id)
+            for (i in weatherList.weather.indices){
+                binding.tvDescription.text = weatherList.weather[i].description
+                setRightImage(weatherList.weather[i].id)
+            }
+
+            binding.tvSunrise.text = getUnixTime(weatherList.sys.sunrise)
+            binding.tvSunset.text = getUnixTime(weatherList.sys.sunset)
+
+            binding.tvCurrentWind.text = weatherList.wind.speed.toString() + " ${getString(R.string.st_m_s)}"
         }
-
-        binding.tvSunrise.text = getUnixTime(weatherList.sys.sunrise)
-        binding.tvSunset.text = getUnixTime(weatherList.sys.sunset)
-
-        binding.tvCurrentWind.text = weatherList.wind.speed.toString() + " ${getString(R.string.st_m_s)}"
     }
 
+    /** Next method show right image for correspondent weather, based on it's id*/
     private fun setRightImage(id: Int){
         when(id){
             in 200..232 -> binding.ivIcon.setImageResource(R.drawable.ic_thunderstorm)
@@ -231,7 +262,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    //time from json
+
+    /** Next method convert received time for readable format*/
     private fun getUnixTime(timex: Long): String{
         val date = Date(timex * 1000L)
         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
