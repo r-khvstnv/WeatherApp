@@ -13,6 +13,8 @@
     <string name="st_refresh">refresh</string>
     <string name="st_min_temp">min temperature</string>
     <string name="st_max_temp">max temperature</string>
+    <string name="st_humidity">humidity</string>
+    <string name="st_pressure">pressure</string>
     <string name="st_weather_icon">weather icon</string>
     <string name="st_sunrise">sunrise</string>
     <string name="st_sunset">sunset</string>
